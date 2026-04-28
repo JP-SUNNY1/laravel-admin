@@ -3,9 +3,9 @@
 set -e
 
 # Navigate to project directory
-cd /var/www/html/
+cd /var/www/html/laravel-admin/
 
-echo "Starting deployment in /var/www/html/..."
+echo "Starting deployment in /var/www/html/laravel-admin/..."
 
 # Git
 git fetch origin
