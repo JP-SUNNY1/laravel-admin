@@ -16,7 +16,7 @@ Route::prefix('/')->group(function () {
 
     Route::get('/sign-in-2', function () {
         return Inertia::render('auth/sign-in-2');
-    })->name('auth.sign-in');
+    })->name('auth.sign-in-2');
 
     Route::get('/sign-up', function () {
         return Inertia::render('auth/sign-up');
@@ -89,7 +89,7 @@ Route::middleware('auth')->group(function () {
         })->name('display');
         Route::get('/help-center', function () {
             return Inertia::render('authenticated/settings/display');
-        })->name('display');
+        })->name('settings.help-center');
     });
 });
 
@@ -109,7 +109,7 @@ Route::prefix('errors')->name('error.')->group(function () {
 
     Route::get('internal-server-error', function () {
         return Inertia::render('errors/internal-server');
-    })->name('maintenance');
+    })->name('error.internal-server-error');
 
     // Fallback for 404
     Route::fallback(function () {
