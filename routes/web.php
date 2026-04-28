@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -8,6 +9,10 @@ Route::prefix('/')->group(function () {
     Route::get('/sign-in', function () {
         return Inertia::render('auth/sign-in');
     })->name('auth.sign-in');
+
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+    Route::get('/user', [AuthController::class, 'user'])->name('user')->middleware('auth');
 
     Route::get('/sign-in-2', function () {
         return Inertia::render('auth/sign-in-2');
@@ -27,63 +32,65 @@ Route::prefix('/')->group(function () {
 });
 
 // Authenticated routes
-// Dashboard
-Route::get('/', function () {
-    return Inertia::render('authenticated/dashboard');
-})->name('dashboard');
-
-// Users
-Route::get('/users', function () {
-    return Inertia::render('authenticated/users');
-})->name('users.index');
-
-// Tasks
-Route::get('/tasks', function () {
-    return Inertia::render('authenticated/tasks');
-})->name('tasks.index');
-
-// Apps
-Route::get('/apps', function () {
-    return Inertia::render('authenticated/apps');
-})->name('apps.index');
-
-// Chats
-Route::get('/chats', function () {
-    return Inertia::render('authenticated/chats');
-})->name('chats.index');
-
-Route::get('/help-center', function () {
-    return Inertia::render('authenticated/help-center');
-})->name('help-center');
-
-// Settings
-Route::prefix('settings')->name('settings.')->group(function () {
+Route::middleware('auth')->group(function () {
+    // Dashboard
     Route::get('/', function () {
-        return Inertia::render('authenticated/settings');
-    })->name('index');
+        return Inertia::render('authenticated/dashboard');
+    })->name('dashboard');
 
-    Route::get('/profile', function () {
-        return Inertia::render('authenticated/settings/profile');
-    })->name('profile');
+    // Users
+    Route::get('/users', function () {
+        return Inertia::render('authenticated/users');
+    })->name('users.index');
 
-    Route::get('/account', function () {
-        return Inertia::render('authenticated/settings/account');
-    })->name('account');
+    // Tasks
+    Route::get('/tasks', function () {
+        return Inertia::render('authenticated/tasks');
+    })->name('tasks.index');
 
-    Route::get('/appearance', function () {
-        return Inertia::render('authenticated/settings/appearance');
-    })->name('appearance');
+    // Apps
+    Route::get('/apps', function () {
+        return Inertia::render('authenticated/apps');
+    })->name('apps.index');
 
-    Route::get('/notifications', function () {
-        return Inertia::render('authenticated/settings/notifications');
-    })->name('notifications');
+    // Chats
+    Route::get('/chats', function () {
+        return Inertia::render('authenticated/chats');
+    })->name('chats.index');
 
-    Route::get('/display', function () {
-        return Inertia::render('authenticated/settings/display');
-    })->name('display');
     Route::get('/help-center', function () {
-        return Inertia::render('authenticated/settings/display');
-    })->name('display');
+        return Inertia::render('authenticated/help-center');
+    })->name('help-center');
+
+    // Settings
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('authenticated/settings');
+        })->name('index');
+
+        Route::get('/profile', function () {
+            return Inertia::render('authenticated/settings/profile');
+        })->name('profile');
+
+        Route::get('/account', function () {
+            return Inertia::render('authenticated/settings/account');
+        })->name('account');
+
+        Route::get('/appearance', function () {
+            return Inertia::render('authenticated/settings/appearance');
+        })->name('appearance');
+
+        Route::get('/notifications', function () {
+            return Inertia::render('authenticated/settings/notifications');
+        })->name('notifications');
+
+        Route::get('/display', function () {
+            return Inertia::render('authenticated/settings/display');
+        })->name('display');
+        Route::get('/help-center', function () {
+            return Inertia::render('authenticated/settings/display');
+        })->name('display');
+    });
 });
 
 // Error pages

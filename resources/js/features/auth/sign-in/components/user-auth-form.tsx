@@ -3,7 +3,7 @@ import { PasswordInput } from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { cn, sleep } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, router } from '@inertiajs/react';
@@ -36,34 +36,54 @@ export function UserAuthForm({ className, redirectTo, ...props }: UserAuthFormPr
         },
     });
 
-    function onSubmit(data: z.infer<typeof formSchema>) {
+    async function onSubmit(data: z.infer<typeof formSchema>) {
         setIsLoading(true);
 
-        toast.promise(sleep(2000), {
-            loading: 'Signing in...',
-            success: () => {
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content || '',
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                const errorMessage = result.message || result.errors?.email?.[0] || 'Login failed. Please try again.';
+                toast.error(errorMessage);
                 setIsLoading(false);
+                return;
+            }
 
-                // Mock successful authentication with expiry computed at success time
-                const mockUser = {
-                    accountNo: 'ACC001',
-                    email: data.email,
-                    role: ['user'],
-                    exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours from now
-                };
+            // Store user and token from backend response
+            const mockUser = {
+                accountNo: result.user.id,
+                email: result.user.email,
+                name: result.user.name,
+                role: ['user'],
+                exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours from now
+            };
 
-                // Set user and access token
-                auth.setUser(mockUser);
-                auth.setAccessToken('mock-access-token');
+            // Set user and access token
+            auth.setUser(mockUser);
+            auth.setAccessToken(result.token);
 
-                // Redirect to the stored location or default to dashboard
-                const targetPath = redirectTo || '/dashboard';
-                router.visit(targetPath, { replace: true });
+            // Store token in localStorage for API requests
+            localStorage.setItem('auth-token', result.token);
 
-                return `Welcome back, ${data.email}!`;
-            },
-            error: 'Error',
-        });
+            toast.success(`Welcome back, ${result.user.name}!`);
+
+            // Redirect to the stored location or default to dashboard
+            const targetPath = redirectTo || '/';
+            router.visit(targetPath, { replace: true });
+        } catch (error) {
+            console.error('Login error:', error);
+            toast.error('An error occurred during login. Please try again.');
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -76,7 +96,7 @@ export function UserAuthForm({ className, redirectTo, ...props }: UserAuthFormPr
                         <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input placeholder="name@example.com" {...field} />
+                                <Input placeholder="name@example.com" {...field} disabled={isLoading} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -89,7 +109,7 @@ export function UserAuthForm({ className, redirectTo, ...props }: UserAuthFormPr
                         <FormItem className="relative">
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                                <PasswordInput placeholder="********" {...field} />
+                                <PasswordInput placeholder="********" {...field} disabled={isLoading} />
                             </FormControl>
                             <FormMessage />
                             <Link

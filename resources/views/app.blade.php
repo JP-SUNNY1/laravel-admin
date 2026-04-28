@@ -28,6 +28,7 @@
             media="(prefers-color-scheme: dark)"
         />
         <meta name="title" content="{{config('app.name', 'Laravel')}}" />
+        <meta name="csrf-token" content="{{ csrf_token() }}" />
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
         
         <meta
