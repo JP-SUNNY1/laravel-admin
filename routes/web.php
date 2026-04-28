@@ -10,6 +10,12 @@ Route::prefix('/')->group(function () {
         return Inertia::render('auth/sign-in');
     })->name('auth.sign-in');
 
+    // GET /login redirects to /sign-in (for browser access)
+    // POST /login handles authentication (for API calls)
+    Route::get('/login', function () {
+        return redirect()->route('auth.sign-in');
+    })->name('auth.login');
+
     Route::post('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
     Route::get('/user', [AuthController::class, 'user'])->name('user')->middleware('auth');
